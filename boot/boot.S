@@ -5,7 +5,7 @@
 # memory at physical address 0x7c00 and starts executing in real mode
 # with %cs=0 %ip=7c00.
 
-.set PROT_MODE_CSEG, 0x8         # kernel code segment selector
+.set PROT_MODE_CSEG, 0x8         # kernel code segment selector  是一个offset就是个偏移值，这里的gdtdesc->gdt，gdt每个表项是8bytes,所以这里是0x8
 .set PROT_MODE_DSEG, 0x10        # kernel data segment selector
 .set CR0_PE_ON,      0x1         # protected mode enable flag
 
@@ -16,6 +16,7 @@ start:
   cld                         # String operations increment
 
   # Set up the important data segment registers (DS, ES, SS).
+  #将Data,Extra,Stack这些段寄存器全设为0
   xorw    %ax,%ax             # Segment number zero
   movw    %ax,%ds             # -> Data Segment
   movw    %ax,%es             # -> Extra Segment
@@ -25,6 +26,8 @@ start:
   #   For backwards compatibility with the earliest PCs, physical
   #   address line 20 is tied low, so that addresses higher than
   #   1MB wrap around to zero by default.  This code undoes this.
+  #下面这段代码的意思的是：对物理地址第20位上面的bit进行控制,31-21位保持不变,和保护模式无关
+  #打开的话相当于，这一位算出来是多少就写多少，关掉的话，这一位永远为0
 seta20.1:
   inb     $0x64,%al               # Wait for not busy
   testb   $0x2,%al
